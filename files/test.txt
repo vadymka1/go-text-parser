@@ -1,0 +1,3 @@
+In this little code, we are creating a handler called sayHello which retrieves the path of the URL (first line), removes the first slash (second line) and appends the “Hello” to the beginning of the sentence. Then, we write the final message to the ResponseWriter converted to bytes.
+
+The main function is also easy to understand: in the first line we tell the server to use the handler sayHello to every request that hits the server and in the second and third lines we start the server on port 8080 and handle an error if something wrong happens.
