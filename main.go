@@ -17,12 +17,19 @@ type Content struct {
 	Header        string `json:"header"`
 }
 
-type ArrayofData struct {
+type ArrayofWord struct {
 	Key   string
 	Value int
 }
 
-var sortWord []ArrayofData
+type ArrayofChar struct {
+	Key   string
+	Value int
+}
+
+var sortWord []ArrayofWord
+
+var sortChar []ArrayofChar
 
 func main() {
 
@@ -39,20 +46,19 @@ func getData(w http.ResponseWriter, r *http.Request) {
 
 	filePath := getFilePath(w, r)
 
-	text := string(parseFile(filePath))
+	text := parseFile(filePath)
 
 	words := parseTextToWords(text)
 
-	// chars := parseTextToChars(text)
-
 	wordsCounter := findnumberofwords(words)
 
-	charsCounter := findnumberofwords(text)
+	charsCounter := findnumberofchars(text)
 
+	fmt.Printf("Find words : %d \n", len(wordsCounter))
 	fmt.Print("Top 10 words : \n")
 
 	for k, v := range wordsCounter {
-		sortWord = append(sortWord, ArrayofData{k, v})
+		sortWord = append(sortWord, ArrayofWord{k, v})
 	}
 
 	sort.Slice(sortWord, func(i, j int) bool {
@@ -73,12 +79,29 @@ func getData(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("----")
 
-	charsCount := 0
-
-	fmt.Printf("Find %d chars : \n", charsCount)
+	fmt.Printf("Find chars : %d \n", len(text))
 	fmt.Print("Top 10 chars : \n")
 
-	// fmt.Println(words, len(words))
+	for k, v := range charsCounter {
+		sortChar = append(sortChar, ArrayofChar{k, v})
+	}
+
+	sort.Slice(sortChar, func(i, j int) bool {
+		return sortChar[i].Value > sortChar[j].Value
+	})
+
+	j := 0
+
+	for _, kv := range sortChar {
+
+		j++
+
+		if j < 11 {
+
+			fmt.Printf("%d. Char : %s, Amount : %d\n", j, kv.Key, kv.Value)
+		}
+
+	}
 
 }
 
@@ -118,7 +141,7 @@ func getFilePath(w http.ResponseWriter, r *http.Request) string {
 	return filePath
 }
 
-func parseFile(filepath string) []byte {
+func parseFile(filepath string) string {
 
 	file, err := os.Open(filepath)
 	if err != nil {
@@ -133,7 +156,7 @@ func parseFile(filepath string) []byte {
 		fmt.Print(err)
 	}
 
-	return b
+	return string(b)
 }
 
 func parseTextToWords(text string) []string {
@@ -158,10 +181,23 @@ func findnumberofwords(list []string) map[string]int {
 	}
 
 	return duplicateFrequency
+
 }
 
-// func findnumberofchars(text string) []string {
+func findnumberofchars(text string) map[string]int {
 
-// 	chars :=
+	duplicateFrequency := make(map[string]int)
 
-// }
+	for _, char := range text {
+		_, exist := duplicateFrequency[string(char)]
+
+		if exist {
+			duplicateFrequency[string(char)]++
+		} else {
+			duplicateFrequency[string(char)] = 1
+		}
+	}
+
+	return duplicateFrequency
+
+}
