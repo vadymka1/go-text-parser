@@ -9,6 +9,8 @@ import (
 	"os"
 	"sort"
 	"strings"
+
+	"github.com/gorilla/mux"
 )
 
 type Content struct {
@@ -35,7 +37,12 @@ func main() {
 
 	fmt.Println("Starting ...")
 
-	http.HandleFunc("/upload", getData)
+	router := mux.NewRouter()
+
+	router.HandleFunc("/", controllers.getUploadForm).Methods("GET")
+	router.HandleFunc("/upload", controllers.getStatistic).Methods("POST")
+
+	// http.HandleFunc("/upload", getData)
 
 	if err := http.ListenAndServe(":9090", nil); err != nil {
 		log.Fatal(err)
