@@ -179,13 +179,13 @@ func parseFile(filepath string) string {
 
 	defer file.Close()
 
-	b, err := ioutil.ReadAll(file)
+	read, err := ioutil.ReadAll(file)
 
 	if err != nil {
 		fmt.Print(err)
 	}
 
-	return string(b)
+	return string(read)
 }
 
 func parseTextToWords(text string) []string {
@@ -232,28 +232,3 @@ func findnumberofchars(text string) map[string]int {
 	return duplicateFrequency
 
 }
-
-//
-//func findNumberOfType(text string, word bool) map[string]int {
-//
-//	if word {
-//		list = parseTextToWords(text)
-//	} else {
-//		list = strings.Replace(text, " ", "", -1)
-//	}
-//
-//	duplicateFrequency := make(map[string]int)
-//
-//	for _, item := range list {
-//		_, exist := duplicateFrequency[item]
-//
-//		if exist {
-//			duplicateFrequency[item]++
-//		} else {
-//			duplicateFrequency[item] = 1
-//		}
-//	}
-//
-//	return duplicateFrequency
-//
-//}
