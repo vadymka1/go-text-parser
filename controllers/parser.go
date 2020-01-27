@@ -3,19 +3,19 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"html/template"
 	"os"
 	"sort"
 	"strings"
 )
 
 type ViewData struct {
-	 Title  string
-	 Description string
+	Title       string
+	Description string
 }
 
 type ArrayofWord struct {
@@ -31,8 +31,8 @@ type ArrayofChar struct {
 type Content struct {
 	WordsNumber int
 	CharsNumber int
-	Words []ArrayofWord
-	Char  []ArrayofChar
+	Words       []ArrayofWord
+	Char        []ArrayofChar
 }
 
 var sortWord []ArrayofWord
@@ -42,34 +42,37 @@ var sortChar []ArrayofChar
 func GetuploadForm(w http.ResponseWriter, r *http.Request) {
 
 	data := ViewData{
-		Title 		: "Uploading file",
-		Description : "Put your file",
+		Title:       "Uploading file",
+		Description: "Put your file",
 	}
-	t, _:= template.ParseFiles("templates/upload.html")
+	t, _ := template.ParseFiles("templates/upload.html")
 
 	t.Execute(w, data)
 
 }
 
 func GetStatistic(w http.ResponseWriter, r *http.Request) {
-	getData(w, r)
+	GetData(w, r)
 }
 
+func GetData(w http.ResponseWriter, r *http.Request) []byte {
 
-func getData(w http.ResponseWriter, r *http.Request) []byte {
+	filePath := GetFilePath(w, r)
 
-	filePath := getFilePath(w, r)
+	text, err := ParseFile(filePath)
 
-	text := parseFile(filePath)
+	if err != nil {
+		log.Println(err)
+	}
 
-	words := parseTextToWords(text)
+	words := ParseTextToWords(text)
 
-	wordsCounter := findnumberofwords(words)
+	wordsCounter := FindNumberOfWords(words)
 
-	charsCounter := findnumberofchars(text)
+	charsCounter := FindNumberOfChars(text)
 
-	fmt.Printf("Find words : %d \n", len(wordsCounter))
-	fmt.Print("Top 10 words : \n")
+	//fmt.Printf("Find words : %d \n", len(wordsCounter))
+	//fmt.Print("Top 10 words : \n")
 
 	for k, v := range wordsCounter {
 		sortWord = append(sortWord, ArrayofWord{k, v})
@@ -79,22 +82,22 @@ func getData(w http.ResponseWriter, r *http.Request) []byte {
 		return sortWord[i].Value > sortWord[j].Value
 	})
 
-	i := 0
-
-	for _, kv := range sortWord {
-
-		i++
-
-		if i < 11 {
-			fmt.Printf("%d. Word : %s, Amount : %d\n", i, kv.Key, kv.Value)
-		}
-
-	}
-
-	fmt.Println("----")
-
-	fmt.Printf("Find chars : %d \n", len(text))
-	fmt.Print("Top 10 chars : \n")
+	//i := 0
+	//
+	//for _, kv := range sortWord {
+	//
+	//	i++
+	//
+	//	if i < 11 {
+	//		fmt.Printf("%d. Word : %s, Amount : %d\n", i, kv.Key, kv.Value)
+	//	}
+	//
+	//}
+	//
+	//fmt.Println("----")
+	//
+	//fmt.Printf("Find chars : %d \n", len(text))
+	//fmt.Print("Top 10 chars : \n")
 
 	for k, v := range charsCounter {
 		sortChar = append(sortChar, ArrayofChar{k, v})
@@ -104,27 +107,27 @@ func getData(w http.ResponseWriter, r *http.Request) []byte {
 		return sortChar[i].Value > sortChar[j].Value
 	})
 
-	j := 0
-
-	for _, kv := range sortChar {
-
-		j++
-
-		if j < 11 {
-
-			fmt.Printf("%d. Char : %s, Amount : %d\n", j, kv.Key, kv.Value)
-		}
-
-	}
+	//j := 0
+	//
+	//for _, kv := range sortChar {
+	//
+	//	j++
+	//
+	//	if j < 11 {
+	//
+	//		fmt.Printf("%d. Char : %s, Amount : %d\n", j, kv.Key, kv.Value)
+	//	}
+	//
+	//}
 
 	data := Content{
 		WordsNumber: len(wordsCounter),
 		CharsNumber: len(text),
-		Words: 	 	 sortWord[:10],
+		Words:       sortWord[:10],
 		Char:        sortChar[:10],
 	}
 
-	var jsonData []byte
+	//var jsonData []byte
 
 	jsonData, err := json.Marshal(data)
 
@@ -138,10 +141,9 @@ func getData(w http.ResponseWriter, r *http.Request) []byte {
 	return jsonData
 }
 
-func getFilePath(w http.ResponseWriter, r *http.Request) string {
+func GetFilePath(w http.ResponseWriter, r *http.Request) string {
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		// fmt.Fprintf(w, "invalid_http_method")
 		return "invalid_http_method"
 	}
 
@@ -170,11 +172,11 @@ func getFilePath(w http.ResponseWriter, r *http.Request) string {
 	return filePath
 }
 
-func parseFile(filepath string) string {
+func ParseFile(filepath string) (string, error) {
 
 	file, err := os.Open(filepath)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
 	defer file.Close()
@@ -182,20 +184,20 @@ func parseFile(filepath string) string {
 	read, err := ioutil.ReadAll(file)
 
 	if err != nil {
-		fmt.Print(err)
+		return "", err
 	}
 
-	return string(read)
+	return string(read), nil
 }
 
-func parseTextToWords(text string) []string {
+func ParseTextToWords(text string) []string {
 
 	words := strings.Fields(text)
 
 	return words
 }
 
-func findnumberofwords(list []string) map[string]int {
+func FindNumberOfWords(list []string) map[string]int {
 
 	duplicateFrequency := make(map[string]int)
 
@@ -213,7 +215,7 @@ func findnumberofwords(list []string) map[string]int {
 
 }
 
-func findnumberofchars(text string) map[string]int {
+func FindNumberOfChars(text string) map[string]int {
 
 	duplicateFrequency := make(map[string]int)
 

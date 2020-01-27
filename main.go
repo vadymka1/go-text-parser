@@ -24,10 +24,6 @@ var port = os.Getenv("httpPort")
 
 func StartServer() *Server {
 
-	//if port == "" {
-	//	port = ":80"
-	//}
-
 	fmt.Print(port)
 
 	srv := &Server{
