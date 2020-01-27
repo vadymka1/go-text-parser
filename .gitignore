@@ -1,2 +1,4 @@
 /files/*
 /.env
+.idea/*
+.vscode/*
